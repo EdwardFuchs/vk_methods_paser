@@ -67,6 +67,7 @@ def generate_json(debug : bool = False):
                     #убираем тип переменной из описания
                     param_desc = params_desc_all_row[i].text[:-len(param_type)]
                     vk_class_dict[vk_class][method][param_name] = {'desc': param_desc, 'type': param_type}
+                # TODO: добавть описание функции
                 if debug:
                     print(f"{vk_class}.{method} успешно пропарсен")
             except Exception as e:
@@ -91,26 +92,38 @@ def create_vk_class_file(vk_class_dict : dict, debug : bool = False):
         #vk_class_file.write()
         for vk_class in vk_class_dict:
             #заполение класса вк другими классами
-            up_str+= f"        self.{vk_class} = self.{vk_class}(event)\n"
+            up_str+= f"        self.{vk_class} = self.{vk_class}(self.exec_func)\n"
             #создание других классов
             down_str+= f"""    class {vk_class}:
-        def  __init__(self, event):
-            self.event = event\n"""
+        def  __init__(self, exec_func):
+            self.exec_func = exec_func\n"""
             #создание методов для классов
             for method in vk_class_dict[vk_class]:
-                down_str+= f"        def {method}("
+                down_str+= f"        def {method}(self, "
                 args = vk_class_dict[vk_class][method]
+                args_str = ""
+                args_str_method = ""
                 # TODO: помечать типы данных
-                args_str = " = None, ".join(args)
+                for arg in args:
+                    args_str += f"{arg} = None, "
+                    args_str_method += f"{arg} = {arg}, "
+                #args_str = args_str[:-2]
+                args_str_method += "v = v, access_token = access_token"
+                #args_str = " = None, ".join(args)
                 if args_str != "":
-                    args_str = "v = None, access_token = None, " + args_str + " = None"
+                    args_str = args_str + "v = None, access_token = None"
                 else:
                     args_str = "v = None, access_token = None"
                 down_str += f"""{args_str}):
-            pass\n"""
+            self.exec_func("{vk_class}.{method}", {args_str_method})\n"""#########################
             down_str+="\n\n"
 
-
+        down_str += """    def exec_func(self, method, **kwargs):
+        new_kwargs = {}
+        for kwarg in kwargs:
+            if kwargs[kwarg] != None:
+                new_kwargs[kwarg] = kwargs[kwarg]
+        print(new_kwargs)"""
         res = up_str + "\n\n" + down_str
         vk_class_file.write(res)
         if debug:
@@ -125,7 +138,7 @@ if __name__ == '__main__':
         # TODO: дефолтное значение сделать
         vk_class_dict = generate_json(debug)
         vk_class_dict_file = open("vk_classes.json", encoding="utf-8", mode="w")
-        vk_class_dict_file.write(json.dumps(vk_class_dict))
+        vk_class_dict_file.write(json.dumps(vk_class_dict, encoding="utf-8"))
         vk_class_dict_file.close()
     else:
         vk_class_dict_file = open("vk_classes.json", encoding="utf-8", mode="r")
