@@ -36,10 +36,17 @@ def generate_json(debug : bool = False):
                 text = requests.get(url).text
                 soup_full = BeautifulSoup(text, 'html.parser')
                 #Находим блок параметров
+                #dev_method_desc
                 soup = soup_full.find('div', {'class': 'page_block', 'class': 'dev_method_block', 'class': 'dev_block_spoiler'})
                 if soup == None:
                     print(f"{vk_class}.{method} не найден div с классами: page_block, dev_method_block, dev_block_spoiler")
                     continue
+                #Описание функции
+                method_desc = soup_full.find('div', {'class': 'dev_method_desc'})
+                if method_desc == None:
+                    print(f"{vk_class}.{method} не найден div с классом: dev_method_desc")
+                    continue
+                method_desc = method_desc.text
                 #получаем все имена и описания параметров
                 #Названия параметров
                 params_names_all_row = soup.find_all('td', {'class': 'dev_param_name'})
@@ -56,6 +63,10 @@ def generate_json(debug : bool = False):
                 if params_desc_all_row == None:
                     print(f"{vk_class}.{method} не найден td с классом: dev_param_opts")
                     continue
+                required_params = []
+                # TODO:  добавить дефолтное значение
+                #создания поля параметров
+                vk_class_dict[vk_class][method]["params"] = {}
                 #Переделываем в строки все
                 for i in range (len(params_desc_all_row)):
                     param_name = params_names_all_row[i].text
@@ -65,21 +76,51 @@ def generate_json(debug : bool = False):
                         param_name = "from_"
                     param_type = params_desc_type_row[i].text
                     #убираем тип переменной из описания
-                    param_desc = params_desc_all_row[i].text[:-len(param_type)]
-                    vk_class_dict[vk_class][method][param_name] = {'desc': param_desc, 'type': param_type}
-                # TODO: добавть описание функции
+                    param_desc = params_desc_all_row[i].text#[:-len(param_type)]
+                    param_type_python = None
+                    if "число" in param_type:
+                        param_type_python = "int"
+                    elif "разделенных запятыми" in param_type:
+                        param_type_python = "str"
+                    elif " разделенных через запятую" in param_type:
+                        param_type_python = "str"
+                    elif "строка" in param_type:
+                        param_type_python = "str"
+                    elif "1 или 0" in param_type:
+                        param_type_python = "bool"
+                    elif "JSON-объект" in param_desc:
+                        param_type_python = "str"
+                    else:
+                        param_type_python = "not defined"
+                    default = "None"
+                    #Заполнение обязательных параметров
+                    if "обязательный параметр" in param_type:
+                        required_params.append(param_name)
+                    if "по умолчанию " in param_type:
+                        default = param_type.split("по умолчанию ")[1].split(",")[0]
+                    vk_class_dict[vk_class][method]["params"][param_name] = {'desc': param_desc, 'type': param_type_python, "default": default}
+                #Добавление описания функции
+                vk_class_dict[vk_class][method]["desc"] = method_desc
+                #Добавление обязтельных параметров
+                vk_class_dict[vk_class][method]["required_params"] = required_params
                 if debug:
                     print(f"{vk_class}.{method} успешно пропарсен")
             except Exception as e:
                     print(f"{vk_class}.{method} с ошибкой: {e}")
+            #input()
     return vk_class_dict
 
 def create_vk_class_file(vk_class_dict : dict, debug : bool = False):
         if debug:
             print("Открываем файл")
         vk_class_file = open("vk_class.py", encoding="utf-8", mode="w")
+        body = ""
         #создание класса Vk
-        up_str = f"""class Vk:
+        head = f"""# -*- coding: utf8 -*-
+import json
+
+
+class Vk:
     def __init__(self, event):
         self.event = event
         try:
@@ -88,22 +129,29 @@ def create_vk_class_file(vk_class_dict : dict, debug : bool = False):
             vk_class_dict_file.close()
         except:
             self.vk_class_dict = None\n"""
-        down_str = ""
         #vk_class_file.write()
         for vk_class in vk_class_dict:
+            down_str = ""
+            middle_str = ""
             #заполение класса вк другими классами
-            up_str+= f"        self.{vk_class} = self.{vk_class}(self.exec_func)\n"
+            head+= f"        self.{vk_class} = self.{vk_class}(self.exec_func)\n"
             #создание других классов
-            down_str+= f"""    class {vk_class}:
-        def  __init__(self, exec_func):
-            self.exec_func = exec_func\n"""
+            middle_str+= f"""    class {vk_class}:
+        def  __init__(self, exec_func):\n"""
             #создание методов для классов
             for method in vk_class_dict[vk_class]:
-                down_str+= f"        def {method}(self, "
-                args = vk_class_dict[vk_class][method]
+                args = vk_class_dict[vk_class][method]["params"]
+                middle_str+= f"            self.{method} = self.{method}(exec_func)\n"
+                down_str+= f"""        class {method}:
+            '''{vk_class_dict[vk_class][method]["desc"]}'''
+            def __init__(self, exec_func):
+                self.exec_func = exec_func
+                self.args = {json.dumps(args, ensure_ascii=False)}
+            def __call__"""########################################
                 args_str = ""
                 args_str_method = ""
                 # TODO: помечать типы данных
+                # TODO: обязательне параметры
                 for arg in args:
                     args_str += f"{arg} = None, "
                     args_str_method += f"{arg} = {arg}, "
@@ -111,34 +159,38 @@ def create_vk_class_file(vk_class_dict : dict, debug : bool = False):
                 args_str_method += "v = v, access_token = access_token"
                 #args_str = " = None, ".join(args)
                 if args_str != "":
-                    args_str = args_str + "v = None, access_token = None"
+                    args_str = "(self, " + args_str + "v = None, access_token = None):\n"
                 else:
-                    args_str = "v = None, access_token = None"
-                down_str += f"""{args_str}):
-            self.exec_func("{vk_class}.{method}", {args_str_method})\n"""#########################
-            down_str+="\n\n"
-
-        down_str += """    def exec_func(self, method, **kwargs):
+                    args_str = "(self, v = None, access_token = None):\n"
+                down_str += args_str +f"""                self.exec_func("{vk_class}.{method}", {args_str_method})\n"""
+            body += middle_str + down_str
+        end = """    def exec_func(self, method, **kwargs):
         new_kwargs = {}
         for kwarg in kwargs:
             if kwargs[kwarg] != None:
                 new_kwargs[kwarg] = kwargs[kwarg]
-        print(new_kwargs)"""
-        res = up_str + "\n\n" + down_str
+        print(f"Переданные аргументы: {new_kwargs}")
+
+
+if __name__ == "__main__":
+    Vk=Vk(123)
+    Vk.widgets.getPages(widget_api_id = "123")
+    print("widget_api_id - " + Vk.widgets.getPages.args["widget_api_id"]["desc"])"""
+        res = head + "\n\n" + body + "\n\n" + end
         vk_class_file.write(res)
         if debug:
             print("Закрываем файл")
         vk_class_file.close()
 
+# TODO: global и еще одну переменную обновить в exec_func
 if __name__ == '__main__':
     debug = True
-    generate = False
+    generate = True
     if generate:
         #генерируем dict
-        # TODO: дефолтное значение сделать
         vk_class_dict = generate_json(debug)
         vk_class_dict_file = open("vk_classes.json", encoding="utf-8", mode="w")
-        vk_class_dict_file.write(json.dumps(vk_class_dict, encoding="utf-8"))
+        vk_class_dict_file.write(json.dumps(vk_class_dict))#, ensure_ascii=False))
         vk_class_dict_file.close()
     else:
         vk_class_dict_file = open("vk_classes.json", encoding="utf-8", mode="r")
