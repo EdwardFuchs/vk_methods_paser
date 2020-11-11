@@ -165,7 +165,14 @@ class Vk:
                 self.exec_func = exec_func
                 self.args = {json.dumps(args, ensure_ascii=False)}
             def __call__"""
-                down_str += args_str +f"""                self.exec_func("{vk_class}.{method}", {args_str_method})\n"""
+                down_str += args_str +f"""                self.exec_func("{vk_class}.{method}", {args_str_method})
+            def get_args(self):
+                res = []
+                for arg in self.args:
+                    res.append(arg)
+                return ", ".join(res)
+            def desc(self):
+                return self.__doc__\n\n"""
             body += middle_str + down_str
         end = """    class execute:
         '''Универсальный метод, который позволяет запускать последовательность других методов, сохраняя и фильтруя промежуточные результаты.'''
@@ -174,6 +181,13 @@ class Vk:
             self.args = {"code": {"desc": "код алгоритма в VKScript - формате, похожем на JavaSсript или ActionScript (предполагается совместимость с ECMAScript). Алгоритм должен завершаться командой return %выражение%. Операторы должны быть разделены точкой с запятой.", "type": "str", "default": "None"}, "func_v": {"desc": "целое число", "type": "int", "default": "week"}}
         def __call__(self, code : str = None, func_v : int = None, v : str = None, access_token : str = None):
             self.exec_func("execute", code = code, func_v = func_v, v = v, access_token = access_token)
+        def get_args(self):
+            res = []
+            for arg in self.args:
+                res.append(arg)
+            return ", ".join(res)
+        def desc(self):
+            return self.__doc__
 
 
     def exec_func(self, method, **kwargs):
