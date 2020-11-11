@@ -121,12 +121,6 @@ import json
 class Vk:
     def __init__(self, event):
         self.event = event
-        try:
-            vk_class_dict_file = open("vk_classes.json", encoding="utf-8", mode="r")
-            self.vk_class_dict = json.loads(vk_class_dict_file.read())
-            vk_class_dict_file.close()
-        except:
-            self.vk_class_dict = None
         self.execute = self.execute(self.exec_func)\n"""
         #vk_class_file.write()
         for vk_class in vk_class_dict:
@@ -165,7 +159,7 @@ class Vk:
                 self.exec_func = exec_func
                 self.args = {json.dumps(args, ensure_ascii=False)}
             def __call__"""
-                down_str += args_str +f"""                self.exec_func("{vk_class}.{method}", {args_str_method})
+                down_str += args_str +f"""                return self.exec_func("{vk_class}.{method}", {args_str_method})
             def get_args(self):
                 res = []
                 for arg in self.args:
@@ -180,7 +174,7 @@ class Vk:
             self.exec_func = exec_func
             self.args = {"code": {"desc": "код алгоритма в VKScript - формате, похожем на JavaSсript или ActionScript (предполагается совместимость с ECMAScript). Алгоритм должен завершаться командой return %выражение%. Операторы должны быть разделены точкой с запятой.", "type": "str", "default": "None"}, "func_v": {"desc": "целое число", "type": "int", "default": "week"}}
         def __call__(self, code : str = None, func_v : int = None, v : str = None, access_token : str = None):
-            self.exec_func("execute", code = code, func_v = func_v, v = v, access_token = access_token)
+            return self.exec_func("execute", code = code, func_v = func_v, v = v, access_token = access_token)
         def get_args(self):
             res = []
             for arg in self.args:
@@ -200,12 +194,9 @@ class Vk:
                     new_kwargs["from"] = kwargs[kwarg]
                 else:
                     new_kwargs[kwarg] = kwargs[kwarg]
-        print(f"Переданные аргументы: {new_kwargs}")
-
-if __name__ == "__main__":
-    Vk=Vk(123)
-    Vk.widgets.getPages(widget_api_id = "123")
-    print("widget_api_id - " + Vk.widgets.getPages.args["widget_api_id"]["desc"])"""
+        return self.event.bot.method(method, **new_kwargs)
+SET_GLOBAL('Vk', Vk)
+print("Библиотека Vk загружена")"""
         res = head + "\n\n" + body + "\n\n" + end
         vk_class_file.write(res)
         if debug:
