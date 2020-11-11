@@ -11,6 +11,7 @@ class Vk:
             vk_class_dict_file.close()
         except:
             self.vk_class_dict = None
+        self.execute = self.execute(self.exec_func)
         self.account = self.account(self.exec_func)
         self.appWidgets = self.appWidgets(self.exec_func)
         self.apps = self.apps(self.exec_func)
@@ -362,7 +363,7 @@ class Vk:
             def __call__(self, phone, client_id : int = None, client_secret : str = None, auth_by_phone : bool = None, v : str = None, access_token : str = None):
                 self.exec_func("auth.checkPhone", phone = phone, client_id = client_id, client_secret = client_secret, auth_by_phone = auth_by_phone, v = v, access_token = access_token)
         class restore:
-            '''Позволяет восстановить доступ к аккаунту, используя код, полученный через SMS.
+            '''Позволяет восстановить доступ к аккаунту, используя код, полученный через SMS. 
 Данный метод доступен только приложениям, имеющим доступ к Прямой авторизации. '''
             def __init__(self, exec_func):
                 self.exec_func = exec_func
@@ -608,7 +609,7 @@ class Vk:
             def __call__(self, owner_id, doc_id, title : str = None, tags : str = None, v : str = None, access_token : str = None):
                 self.exec_func("docs.edit", owner_id = owner_id, doc_id = doc_id, title = title, tags = tags, v = v, access_token = access_token)
         class get:
-            '''Возвращает расширенную информацию о документах пользователя или сообщества.
+            '''Возвращает расширенную информацию о документах пользователя или сообщества. 
 '''
             def __init__(self, exec_func):
                 self.exec_func = exec_func
@@ -637,7 +638,7 @@ class Vk:
             def __call__(self, owner_id, v : str = None, access_token : str = None):
                 self.exec_func("docs.getTypes", owner_id = owner_id, v = v, access_token = access_token)
         class getUploadServer:
-            '''Возвращает адрес сервера для загрузки документов.
+            '''Возвращает адрес сервера для загрузки документов. 
 '''
             def __init__(self, exec_func):
                 self.exec_func = exec_func
@@ -1021,7 +1022,7 @@ class Vk:
             def __call__(self, count : int = None, v : str = None, access_token : str = None):
                 self.exec_func("friends.getRecent", count = count, v = v, access_token = access_token)
         class getRequests:
-            '''Возвращает информацию о полученных или отправленных заявках на добавление в друзья для текущего пользователя.
+            '''Возвращает информацию о полученных или отправленных заявках на добавление в друзья для текущего пользователя. 
 '''
             def __init__(self, exec_func):
                 self.exec_func = exec_func
@@ -1107,8 +1108,8 @@ class Vk:
             self.toggleMarket = self.toggleMarket(exec_func)
             self.unban = self.unban(exec_func)
         class addAddress:
-            '''Позволяет добавить адрес в сообщество.
-Список адресов может быть получен методом groups.getAddresses.
+            '''Позволяет добавить адрес в сообщество. 
+Список адресов может быть получен методом groups.getAddresses. 
 Для того, чтобы воспользоваться этим методом, Вы должны быть администратором сообщества '''
             def __init__(self, exec_func):
                 self.exec_func = exec_func
@@ -1186,8 +1187,8 @@ class Vk:
             def __call__(self, group_id, title : str = None, description : str = None, screen_name : str = None, access : int = None, website : str = None, subject : str = None, email : str = None, phone : str = None, rss : str = None, event_start_date : int = None, event_finish_date : int = None, event_group_id : int = None, public_category : int = None, public_subcategory : int = None, public_date : str = None, wall : int = None, topics : int = None, photos : int = None, video : int = None, audio : int = None, links : bool = None, events : bool = None, places : bool = None, contacts : bool = None, docs : int = None, wiki : int = None, messages : bool = None, articles : bool = None, addresses : bool = None, age_limits : int = None, market : bool = None, market_comments : bool = None, market_country : str = None, market_city : str = None, market_currency : int = None, market_contact : int = None, market_wiki : int = None, obscene_filter : bool = None, obscene_stopwords : bool = None, obscene_words : str = None, main_section : int = None, secondary_section : int = None, country : int = None, city : int = None, v : str = None, access_token : str = None):
                 self.exec_func("groups.edit", group_id = group_id, title = title, description = description, screen_name = screen_name, access = access, website = website, subject = subject, email = email, phone = phone, rss = rss, event_start_date = event_start_date, event_finish_date = event_finish_date, event_group_id = event_group_id, public_category = public_category, public_subcategory = public_subcategory, public_date = public_date, wall = wall, topics = topics, photos = photos, video = video, audio = audio, links = links, events = events, places = places, contacts = contacts, docs = docs, wiki = wiki, messages = messages, articles = articles, addresses = addresses, age_limits = age_limits, market = market, market_comments = market_comments, market_country = market_country, market_city = market_city, market_currency = market_currency, market_contact = market_contact, market_wiki = market_wiki, obscene_filter = obscene_filter, obscene_stopwords = obscene_stopwords, obscene_words = obscene_words, main_section = main_section, secondary_section = secondary_section, country = country, city = city, v = v, access_token = access_token)
         class editAddress:
-            '''Позволяет отредактировать адрес в сообществе.
-Список адресов может быть получен методом groups.getAddresses.
+            '''Позволяет отредактировать адрес в сообществе. 
+Список адресов может быть получен методом groups.getAddresses. 
 Для того, чтобы воспользоваться этим методом, Вы должны быть администратором сообщества '''
             def __init__(self, exec_func):
                 self.exec_func = exec_func
@@ -1989,7 +1990,7 @@ class Vk:
             def __call__(self, user_id, v : str = None, access_token : str = None):
                 self.exec_func("messages.getLastActivity", user_id = user_id, v = v, access_token = access_token)
         class getLongPollHistory:
-            '''Возвращает обновления в личных сообщениях пользователя.
+            '''Возвращает обновления в личных сообщениях пользователя. 
 '''
             def __init__(self, exec_func):
                 self.exec_func = exec_func
@@ -3663,6 +3664,15 @@ class Vk:
                 self.args = {"widget_api_id": {"desc": "идентификатор приложения/сайта, с которым инициализируются виджеты. целое число", "type": "int", "default": "None"}, "order": {"desc": "Тип сортировки страниц. Возможные значения: date, comments, likes, friend_likes. строка, по умолчанию friend_likes", "type": "str", "default": "friend_likes"}, "period": {"desc": "Период выборки. Возможные значения: day, week, month, alltime. строка, по умолчанию week", "type": "str", "default": "week"}, "offset": {"desc": "смещение необходимое для выборки определенного подмножества комментариев. По умолчанию 0. положительное число, по умолчанию 0", "type": "int", "default": "0"}, "count": {"desc": "количество возвращаемых записей. положительное число, по умолчанию 10, минимальное значение 10, максимальное значение 200", "type": "int", "default": "10"}}
             def __call__(self, widget_api_id : int = None, order : str = None, period : str = None, offset : int = None, count : int = None, v : str = None, access_token : str = None):
                 self.exec_func("widgets.getPages", widget_api_id = widget_api_id, order = order, period = period, offset = offset, count = count, v = v, access_token = access_token)
+
+
+    class execute:
+        '''Универсальный метод, который позволяет запускать последовательность других методов, сохраняя и фильтруя промежуточные результаты.'''
+        def __init__(self, exec_func):
+            self.exec_func = exec_func
+            self.args = {"code": {"desc": "код алгоритма в VKScript - формате, похожем на JavaSсript или ActionScript (предполагается совместимость с ECMAScript). Алгоритм должен завершаться командой return %выражение%. Операторы должны быть разделены точкой с запятой.", "type": "str", "default": "None"}, "func_v": {"desc": "целое число", "type": "int", "default": "week"}}
+        def __call__(self, code : str = None, func_v : int = None, v : str = None, access_token : str = None):
+            self.exec_func("execute", code = code, func_v = func_v, v = v, access_token = access_token)
 
 
     def exec_func(self, method, **kwargs):

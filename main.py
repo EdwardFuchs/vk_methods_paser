@@ -18,7 +18,6 @@ def generate_json(debug : bool = False):
             #название класса
             class_name = vk_class.find('div', {'class': 'wk_sub_header'}).text
             class_name = class_name[:1].lower() + class_name[1:]
-            # TODO: сделать other
             if class_name != "other":
                 vk_class_dict[class_name] = {}
                 #получить список всех методов и убрать начало с классом
@@ -127,7 +126,8 @@ class Vk:
             self.vk_class_dict = json.loads(vk_class_dict_file.read())
             vk_class_dict_file.close()
         except:
-            self.vk_class_dict = None\n"""
+            self.vk_class_dict = None
+        self.execute = self.execute(self.exec_func)\n"""
         #vk_class_file.write()
         for vk_class in vk_class_dict:
             down_str = ""
@@ -167,7 +167,16 @@ class Vk:
             def __call__"""
                 down_str += args_str +f"""                self.exec_func("{vk_class}.{method}", {args_str_method})\n"""
             body += middle_str + down_str
-        end = """    def exec_func(self, method, **kwargs):
+        end = """    class execute:
+        '''Универсальный метод, который позволяет запускать последовательность других методов, сохраняя и фильтруя промежуточные результаты.'''
+        def __init__(self, exec_func):
+            self.exec_func = exec_func
+            self.args = {"code": {"desc": "код алгоритма в VKScript - формате, похожем на JavaSсript или ActionScript (предполагается совместимость с ECMAScript). Алгоритм должен завершаться командой return %выражение%. Операторы должны быть разделены точкой с запятой.", "type": "str", "default": "None"}, "func_v": {"desc": "целое число", "type": "int", "default": "week"}}
+        def __call__(self, code : str = None, func_v : int = None, v : str = None, access_token : str = None):
+            self.exec_func("execute", code = code, func_v = func_v, v = v, access_token = access_token)
+
+
+    def exec_func(self, method, **kwargs):
         new_kwargs = {}
         for kwarg in kwargs:
             if kwargs[kwarg] != None:
