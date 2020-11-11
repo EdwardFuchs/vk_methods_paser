@@ -205,7 +205,7 @@ print("Библиотека Vk загружена")"""
 
 if __name__ == '__main__':
     debug = True
-    generate = False
+    generate = True
     if generate:
         #генерируем dict
         vk_class_dict = generate_json(debug)
