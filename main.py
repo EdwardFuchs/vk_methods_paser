@@ -64,7 +64,6 @@ def generate_json(debug : bool = False):
                     print(f"{vk_class}.{method} не найден td с классом: dev_param_opts")
                     continue
                 required_params = []
-                # TODO:  добавить дефолтное значение
                 #создания поля параметров
                 vk_class_dict[vk_class][method]["params"] = {}
                 #Переделываем в строки все
@@ -141,36 +140,44 @@ class Vk:
             #создание методов для классов
             for method in vk_class_dict[vk_class]:
                 args = vk_class_dict[vk_class][method]["params"]
+                required_args= vk_class_dict[vk_class][method]["required_params"]
+                #обработаем нужные парамаетры
+                args_str = ""
+                args_str_method = ""
+                for arg in required_args:
+                    args_str += f"{arg}, "
+                for arg in args:
+                    args_str_method += f"{arg} = {arg}, "
+                    if arg not in required_args:
+                        args_str += arg
+                        if vk_class_dict[vk_class][method]["params"][arg]["type"] != "not defined":
+                            args_str += f" : {vk_class_dict[vk_class][method]['params'][arg]['type']} = None, "
+                        else:
+                            args_str += " = None, "
+                    else:
+                        pass
+                args_str = "(self, " + args_str + "v : str = None, access_token : str = None):\n"
+                args_str_method += "v = v, access_token = access_token"
                 middle_str+= f"            self.{method} = self.{method}(exec_func)\n"
                 down_str+= f"""        class {method}:
             '''{vk_class_dict[vk_class][method]["desc"]}'''
             def __init__(self, exec_func):
                 self.exec_func = exec_func
                 self.args = {json.dumps(args, ensure_ascii=False)}
-            def __call__"""########################################
-                args_str = ""
-                args_str_method = ""
-                # TODO: помечать типы данных
-                # TODO: обязательне параметры
-                for arg in args:
-                    args_str += f"{arg} = None, "
-                    args_str_method += f"{arg} = {arg}, "
-                #args_str = args_str[:-2]
-                args_str_method += "v = v, access_token = access_token"
-                #args_str = " = None, ".join(args)
-                if args_str != "":
-                    args_str = "(self, " + args_str + "v = None, access_token = None):\n"
-                else:
-                    args_str = "(self, v = None, access_token = None):\n"
+            def __call__"""
                 down_str += args_str +f"""                self.exec_func("{vk_class}.{method}", {args_str_method})\n"""
             body += middle_str + down_str
         end = """    def exec_func(self, method, **kwargs):
         new_kwargs = {}
         for kwarg in kwargs:
             if kwargs[kwarg] != None:
-                new_kwargs[kwarg] = kwargs[kwarg]
+                if kwarg == "global_":
+                    new_kwargs["global"] = kwargs[kwarg]
+                elif kwarg == "from_":
+                    new_kwargs["from"] = kwargs[kwarg]
+                else:
+                    new_kwargs[kwarg] = kwargs[kwarg]
         print(f"Переданные аргументы: {new_kwargs}")
-
 
 if __name__ == "__main__":
     Vk=Vk(123)
@@ -182,10 +189,9 @@ if __name__ == "__main__":
             print("Закрываем файл")
         vk_class_file.close()
 
-# TODO: global и еще одну переменную обновить в exec_func
 if __name__ == '__main__':
     debug = True
-    generate = True
+    generate = False
     if generate:
         #генерируем dict
         vk_class_dict = generate_json(debug)
